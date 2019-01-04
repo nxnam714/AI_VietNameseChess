@@ -2,7 +2,9 @@
 import imp
 import time
 import queue
+
 #======================================================================
+from co_ganh import play_change_state_by_turn, play_change_state_by_deadEnd, play_merge_state
 
 
 def board_print(board, move=[], num=0):
@@ -153,7 +155,7 @@ def dead_end(move, state):
         (i, j) = L.get()
         #print(i, j)
         #check if the opponent chip is dead end moving
-        if dead_end_move(i, j, state) and (i, j) in dead_end_list:
+        if dead_end_move(i, j, state) and (i, j) not in dead_end_list:
             #print("Dead end:", i, j)
             dead_end_list.append((i, j))
             tp_neightbors = neighbor_list(i , j)
@@ -189,31 +191,32 @@ def doit(move, state):
 
         #put the chessman on the destination positon
         (x, y) = move[1]
+        index = x*5 + y
         state[x][y] = player
 
         #change state of
         turn_state = board_copy(state)
-        turn(move, turn_state)
+        play_change_state_by_turn(index, turn_state)
         dead_end_state = board_copy(state)
-        dead_end(move, dead_end_state)
+        play_change_state_by_deadEnd(index, dead_end_state)
 
-        merge_state(move, state, turn_state, dead_end_state)
-    return dead_end_state
+        play_merge_state(move, state, turn_state, dead_end_state)
+    return turn_state
 
 #======================================================================
 Initial_Board = [
-                  ['b', 'r', 'r', '.', 'b'], \
-                  ['b', 'b', '.', '.', '.'], \
-                  ['b', 'r', 'r', '.', '.'], \
-                  ['r', '.', 'r', 'r', '.'], \
-                  ['b', 'r', 'b', 'b', '.'], \
+                  ['r', 'r', 'r', 'r', 'r'], \
+                  ['r', '.', '.', '.', 'r'], \
+                  ['b', '.', '.', '.', 'r'], \
+                  ['b', '.', '.', '.', 'b'], \
+                  ['b', 'b', 'b', 'b', 'b'], \
                 ]
 
-# 4 : r r r r r
-# 3 : r . . . r
+# 0 : r r r r r
+# 1 : r . . . r
 # 2 : b . . . r
-# 1 : b . . . b
-# 0 : b b b b b
+# 3 : b . . . b
+# 4 : b b b b b
 #     0 1 2 3 4
 #======================================================================
 
@@ -225,7 +228,7 @@ def play(student_a, student_b, start_state=Initial_Board):
     a = player_a.Player('b')
     b = player_b.Player('r')
     
-    curr_player = a
+    curr_player = b
     state = start_state    
 
     board_num = 0
@@ -260,7 +263,7 @@ def play(student_a, student_b, start_state=Initial_Board):
             curr_player = b
         else:
             curr_player = a
-        break
+        #break
 
     print("Game Over")
     if curr_player == a:
